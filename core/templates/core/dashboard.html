@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    /* Cores do gráfico "Entradas x Saídas": categóricas (identidade das
+       duas séries), não os --green/--red dos badges — esse par falha a
+       checagem de separação para daltonismo (deuteranopia); azul/laranja
+       passam. */
+    :root { --viz-entrada: #3987e5; --viz-saida: #d95926; }
+    :root[data-theme="light"] { --viz-entrada: #2a78d6; --viz-saida: #eb6834; }
+
+    .viz-legend { display: flex; gap: 20px; margin-bottom: 14px; font-size: 13px; }
+    .viz-legend-item { display: flex; align-items: center; gap: 7px; color: var(--text); }
+    .viz-legend-item .link-muted { margin-left: 2px; }
+    .viz-swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+    .viz-swatch-entrada { background: var(--viz-entrada); }
+    .viz-swatch-saida { background: var(--viz-saida); }
+    .viz-chart-wrap { position: relative; }
+    svg.viz-svg { width: 100%; height: auto; display: block; }
+    .viz-bar-entrada { fill: var(--viz-entrada); }
+    .viz-bar-saida { fill: var(--viz-saida); }
+    .viz-gridline { stroke: var(--border); stroke-width: 1; }
+    .viz-baseline { stroke: var(--text-dim); stroke-width: 1; }
+    .viz-axis-text { fill: var(--text-dim); font-size: 9px; }
+    .viz-hit { fill: transparent; cursor: pointer; }
+    .viz-hit:focus { outline: 2px solid var(--orange); outline-offset: -2px; }
+    .viz-tooltip {
+        position: absolute; pointer-events: none; z-index: 10; display: none;
+        background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+        padding: 8px 10px; font-size: 12px; box-shadow: 0 8px 20px rgba(0,0,0,.25);
+        white-space: nowrap;
+    }
+    .viz-tooltip-title { color: var(--text-dim); margin-bottom: 4px; }
+    .viz-tooltip-row { display: flex; align-items: center; gap: 6px; }
+    .viz-tooltip-row .key { width: 10px; height: 2px; display: inline-block; }
+    .viz-tooltip-row .name { color: var(--text-dim); }
+    .viz-tooltip-row .value { font-weight: 700; margin-left: auto; padding-left: 10px; }
+    .viz-table-toggle { margin-top: 10px; font-size: 13px; color: var(--text-dim); cursor: pointer; }
+    .viz-table-toggle table { margin-top: 10px; }
+</style>
+<div class="grid grid-4" style="margin-bottom: 20px;">
+    <div class="card">
+        <div class="kpi-label">Itens em Estoque</div>
+        <div class="kpi-value">{{ total_itens_estoque }}</div>
+        <div class="kpi-sub">em {{ total_categorias }} categorias</div>
+    </div>
+    <div class="card kpi-warn">
+        <div class="kpi-label">Peças Abaixo do Mínimo</div>
+        <div class="kpi-value">{{ qtd_pecas_abaixo_minimo }}</div>
+        <div class="kpi-sub">requer reposição</div>
+    </div>
+    <div class="card">
+        <div class="kpi-label">OS Abertas Hoje</div>
+        <div class="kpi-value">{{ os_abertas_hoje }}</div>
+        <div class="kpi-sub">{{ os_em_andamento }} em andamento</div>
+    </div>
+    <div class="card">
+        <div class="kpi-label">Valor Total do Estoque</div>
+        <div class="kpi-value">R$ {{ valor_total_estoque|floatformat:2 }}</div>
+        <div class="kpi-sub">preço de custo</div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="section-title">Entradas x Saídas (últimos {{ grafico.dias }} dias)</div>
+    {% if grafico.tem_dados %}
+        <div class="viz-legend">
+            <span class="viz-legend-item">
+                <span class="viz-swatch viz-swatch-entrada"></span>
+                Entradas <span class="link-muted">({{ grafico.total_entradas }} un.)</span>
+            </span>
+            <span class="viz-legend-item">
+                <span class="viz-swatch viz-swatch-saida"></span>
+                Saídas <span class="link-muted">({{ grafico.total_saidas }} un.)</span>
+            </span>
+        </div>
+        <div class="viz-chart-wrap">
+            <svg class="viz-svg" viewBox="0 0 {{ grafico.svg_w }} {{ grafico.svg_h }}" preserveAspectRatio="none"
+                 role="img" aria-label="Gráfico de barras: unidades de entrada e saída de estoque por dia, nos últimos {{ grafico.dias }} dias">
+                <line class="viz-gridline" x1="{{ grafico.left_pad }}" y1="{{ grafico.top_y }}" x2="{{ grafico.svg_w }}" y2="{{ grafico.top_y }}"></line>
+                <text class="viz-axis-text" x="{{ grafico.left_pad }}" y="{{ grafico.top_y }}" dx="-6" dy="3" text-anchor="end">{{ grafico.teto_label }}</text>
+
+                <line class="viz-gridline" x1="{{ grafico.left_pad }}" y1="{{ grafico.mid_y }}" x2="{{ grafico.svg_w }}" y2="{{ grafico.mid_y }}"></line>
+                <text class="viz-axis-text" x="{{ grafico.left_pad }}" y="{{ grafico.mid_y }}" dx="-6" dy="3" text-anchor="end">{{ grafico.meio_label }}</text>
+
+                <line class="viz-baseline" x1="{{ grafico.left_pad }}" y1="{{ grafico.baseline }}" x2="{{ grafico.svg_w }}" y2="{{ grafico.baseline }}"></line>
+                <text class="viz-axis-text" x="{{ grafico.left_pad }}" y="{{ grafico.baseline }}" dx="-6" dy="3" text-anchor="end">0</text>
+
+                {% for b in grafico.barras %}
+                    {% if b.path_entrada %}<path class="viz-bar-entrada" d="{{ b.path_entrada }}"></path>{% endif %}
+                    {% if b.path_saida %}<path class="viz-bar-saida" d="{{ b.path_saida }}"></path>{% endif %}
+                    {% if b.mostrar_rotulo %}
+                        <text class="viz-axis-text" x="{{ b.x_label }}" y="{{ grafico.label_y }}" text-anchor="middle">{{ b.data_label }}</text>
+                    {% endif %}
+                    <rect class="viz-hit" x="{{ b.hit_x }}" y="{{ grafico.top_y }}" width="{{ grafico.slot_w }}" height="{{ grafico.hit_h }}"
+                          tabindex="0" role="img"
+                          aria-label="{{ b.data_label }}: {{ b.entrada }} unidades de entrada, {{ b.saida }} unidades de saída"
+                          data-label="{{ b.data_label }}" data-entrada="{{ b.entrada }}" data-saida="{{ b.saida }}">
+                        <title>{{ b.data_label }} — Entradas: {{ b.entrada }} · Saídas: {{ b.saida }}</title>
+                    </rect>
+                {% endfor %}
+            </svg>
+            <div class="viz-tooltip"></div>
+        </div>
+        <details class="viz-table-toggle">
+            <summary>Ver dados em tabela</summary>
+            <table>
+                <thead><tr><th>Dia</th><th>Entradas</th><th>Saídas</th></tr></thead>
+                <tbody>
+                {% for b in grafico.barras %}
+                    <tr><td>{{ b.data|date:"d/m/Y" }}</td><td>{{ b.entrada }}</td><td>{{ b.saida }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </details>
+    {% else %}
+        <div class="empty-state">Nenhuma movimentação de entrada ou saída nos últimos {{ grafico.dias }} dias.</div>
+    {% endif %}
+</div>
+
+<div class="grid grid-2" style="margin-bottom: 20px;">
+    <div class="card">
+        <div class="section-title">Alertas de Estoque Baixo ({{ qtd_pecas_abaixo_minimo }} itens)</div>
+        <table>
+            <thead><tr><th>Peça</th><th>Categoria</th><th>Qtd. / Mín.</th></tr></thead>
+            <tbody>
+            {% for peca in pecas_abaixo_minimo %}
+                <tr>
+                    <td>{{ peca.nome }}</td>
+                    <td>{{ peca.categoria.nome }}</td>
+                    <td style="color: var(--red); font-weight: 600;">
+                        {{ peca.quantidade_estoque }} un. <span style="color: var(--text-dim); font-weight: 400;">/ mín. {{ peca.quantidade_minima }}</span>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="3" style="color: var(--text-dim);">Nenhuma peça abaixo do mínimo.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="section-title">Movimentações Recentes</div>
+        <table>
+            <thead><tr><th>Tipo</th><th>Peça</th><th>Usuário / Hora</th><th>Qtd.</th></tr></thead>
+            <tbody>
+            {% for mov in movimentacoes_recentes %}
+                <tr>
+                    <td><span class="badge badge-{{ mov.tipo }}">{{ mov.get_tipo_display }}</span></td>
+                    <td>{{ mov.peca.nome }}</td>
+                    <td>{{ mov.usuario.username }} · {{ mov.data|time:"H:i" }}</td>
+                    <td>{{ mov.quantidade }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" style="color: var(--text-dim);">Nenhuma movimentação registrada.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="section-title">Ordens de Serviço Abertas</div>
+    <table>
+        <thead><tr><th>OS</th><th>Cliente</th><th>Motocicleta</th><th>Status</th><th>Mecânico</th></tr></thead>
+        <tbody>
+        {% for os in ordens_abertas %}
+            <tr>
+                <td>{{ os.numero }}</td>
+                <td>{{ os.cliente.nome }}</td>
+                <td>{{ os.motocicleta }}</td>
+                <td><span class="badge badge-{{ os.status }}">{{ os.get_status_display }}</span></td>
+                <td>{{ os.mecanico.username|default:"-" }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" style="color: var(--text-dim);">Nenhuma ordem de serviço aberta.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

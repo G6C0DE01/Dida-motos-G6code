@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Trocar senha{% endblock %}
+{% block page_title %}Trocar senha{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    {% if precisa_trocar %}
+        <p class="helptext" style="margin-bottom: 16px;">
+            Esta é uma senha temporária. Defina uma nova senha para continuar usando o sistema.
+        </p>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        {% include "_form_fields.html" %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar nova senha</button>
+            {% if not precisa_trocar %}
+                <a href="{% url 'core:dashboard' %}" class="btn">Cancelar</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

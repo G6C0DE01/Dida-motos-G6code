@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block nav_pecas %}active{% endblock %}
+{% block page_title %}Peças · {{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <a href="{% url 'pecas:list' %}" class="link-muted">&larr; Voltar para Peças</a>
+    <a href="{% url url_novo %}" class="btn btn-primary">+ Novo</a>
+</div>
+<div class="card">
+    <table>
+        <thead><tr><th>Nome</th><th></th></tr></thead>
+        <tbody>
+        {% for item in itens %}
+            <tr>
+                <td>{{ item }}</td>
+                <td class="table-actions">
+                    <a href="{% url url_editar item.pk %}" class="btn btn-sm">Editar</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="2" class="empty-state">Nada cadastrado ainda.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

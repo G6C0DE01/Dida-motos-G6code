@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Previsão de Falta{% endblock %}
+{% block nav_rel %}active{% endblock %}
+{% block page_title %}Relatórios · Previsão de Falta (base: {{ dias_analise }} dias){% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <div></div>
+    <a href="?export=csv" class="btn btn-sm">Exportar CSV</a>
+</div>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Código</th><th>Peça</th><th>Consumo médio/dia</th><th>Previsão p/ atingir mínimo</th></tr>
+        </thead>
+        <tbody>
+        {% for item in previsoes %}
+            <tr>
+                <td>{{ item.peca.codigo }}</td>
+                <td>{{ item.peca.nome }}</td>
+                <td>{{ item.consumo_medio_dia }}</td>
+                <td>
+                    {% if item.dias_para_minimo == 0 %}
+                        <span style="color: var(--red); font-weight: 600;">já está no mínimo ou abaixo</span>
+                    {% else %}
+                        ~{{ item.dias_para_minimo }} dias
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" style="color: var(--text-dim);">Sem dados de consumo suficientes no período.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

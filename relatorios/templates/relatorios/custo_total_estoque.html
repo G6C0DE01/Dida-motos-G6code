@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Custo Total do Estoque{% endblock %}
+{% block nav_rel %}active{% endblock %}
+{% block page_title %}Relatórios · Custo Total do Estoque{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <div></div>
+    <a href="?export=csv" class="btn btn-sm">Exportar CSV</a>
+</div>
+<div class="card" style="margin-bottom: 16px;">
+    <div class="kpi-label">Valor total do estoque (preço de custo)</div>
+    <div class="kpi-value">R$ {{ total|floatformat:2 }}</div>
+</div>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Código</th><th>Peça</th><th>Categoria</th><th>Estoque</th><th>Custo unit.</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody>
+        {% for peca in pecas %}
+            <tr>
+                <td>{{ peca.codigo }}</td>
+                <td>{{ peca.nome }}</td>
+                <td>{{ peca.categoria.nome }}</td>
+                <td>{{ peca.quantidade_estoque }}</td>
+                <td>R$ {{ peca.preco_custo|floatformat:2 }}</td>
+                <td>R$ {{ peca.valor_total_estoque|floatformat:2 }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

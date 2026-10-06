@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Rotatividade de Peças{% endblock %}
+{% block nav_rel %}active{% endblock %}
+{% block page_title %}Relatórios · Rotatividade de Peças (últimos {{ dias }} dias){% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <div></div>
+    <a href="?export=csv" class="btn btn-sm">Exportar CSV</a>
+</div>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>#</th><th>Código</th><th>Peça</th><th>Unidades vendidas/usadas</th></tr>
+        </thead>
+        <tbody>
+        {% for item in ranking %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.peca__codigo }}</td>
+                <td>{{ item.peca__nome }}</td>
+                <td>{{ item.total_saida }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" style="color: var(--text-dim);">Nenhuma saída registrada nesse período.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

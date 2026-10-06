@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Fornecedores{% endblock %}
+{% block nav_forn %}active{% endblock %}
+{% block page_title %}Fornecedores{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <div></div>
+    <a href="{% url 'fornecedores:novo' %}" class="btn btn-primary">+ Novo fornecedor</a>
+</div>
+
+<div class="card">
+    <table>
+        <thead><tr><th>Nome</th><th>Contato</th><th>Telefone</th><th>E-mail</th><th>Prazo entrega</th><th></th></tr></thead>
+        <tbody>
+        {% for f in fornecedores %}
+            <tr>
+                <td>{{ f.nome }}</td>
+                <td>{{ f.contato_nome|default:"-" }}</td>
+                <td>{{ f.telefone|default:"-" }}</td>
+                <td>{{ f.email|default:"-" }}</td>
+                <td>{% if f.prazo_entrega_dias %}{{ f.prazo_entrega_dias }} dias{% else %}-{% endif %}</td>
+                <td><a href="{% url 'fornecedores:editar' f.pk %}" class="btn btn-sm">Editar</a></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="empty-state">Nenhum fornecedor cadastrado.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "_pagination.html" %}
+{% endblock %}

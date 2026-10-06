@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Novo funcionário{% endblock %}
+{% block nav_funcionarios %}active{% endblock %}
+{% block page_title %}Funcionários · Novo funcionário{% endblock %}
+
+{% block content %}
+{% if credenciais %}
+<div class="card form-card" style="border-color: var(--green); margin-bottom: 20px;">
+    <p><strong>Funcionário cadastrado com sucesso.</strong> Anote e repasse estas credenciais — a senha não será mostrada de novo:</p>
+    <p style="font-size:15px;">
+        Usuário: <strong>{{ credenciais.username }}</strong><br>
+        Senha temporária: <strong>{{ credenciais.senha }}</strong>
+    </p>
+    <p class="helptext">{{ credenciais.nome }} vai precisar trocar essa senha no primeiro login — o sistema pede automaticamente.</p>
+</div>
+{% endif %}
+
+<div class="card form-card">
+    <form method="post">
+        {% csrf_token %}
+        {% include "_form_fields.html" %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+            <a href="{% url 'core:funcionario_list' %}" class="btn">Voltar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

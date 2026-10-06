@@ -1,0 +1,32 @@
+{% for field in form %}
+<div class="form-row">
+    {% if field.field.widget.input_type == "checkbox" %}
+        <div class="checkbox-row">
+            {{ field }}
+            <label for="{{ field.id_for_label }}" style="margin: 0;">{{ field.label }}</label>
+        </div>
+    {% else %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+        {% if show_popup_adds and field.name == "fabricante" %}
+            <div style="display:flex; gap:8px; align-items:flex-start;">
+                <div style="flex:1;">{{ field }}</div>
+                <button type="button" class="btn btn-sm popup-add" data-popup-url="{% url 'pecas:fabricante_novo' %}?popup=1&field=fabricante" title="Novo fabricante">+</button>
+            </div>
+        {% elif show_popup_adds and field.name == "localizacao" %}
+            <div style="display:flex; gap:8px; align-items:flex-start;">
+                <div style="flex:1;">{{ field }}</div>
+                <button type="button" class="btn btn-sm popup-add" data-popup-url="{% url 'pecas:localizacao_novo' %}?popup=1&field=localizacao" title="Nova localização">+</button>
+            </div>
+        {% elif show_popup_adds and field.name == "modelos_compativeis" %}
+            <div style="display:flex; gap:8px; align-items:flex-start;">
+                <div style="flex:1;">{{ field }}</div>
+                <button type="button" class="btn btn-sm popup-add" data-popup-url="{% url 'pecas:modelo_novo' %}?popup=1&field=modelos_compativeis" title="Novo modelo de moto">+</button>
+            </div>
+        {% else %}
+            {{ field }}
+        {% endif %}
+    {% endif %}
+    {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+    {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% endfor %}

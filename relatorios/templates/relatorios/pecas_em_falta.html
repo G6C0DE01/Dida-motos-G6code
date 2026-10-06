@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Peças em Falta{% endblock %}
+{% block nav_rel %}active{% endblock %}
+{% block page_title %}Relatórios · Peças em Falta{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <div></div>
+    <a href="?export=csv" class="btn btn-sm">Exportar CSV</a>
+</div>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Código</th><th>Peça</th><th>Categoria</th><th>Estoque</th><th>Mínimo</th></tr>
+        </thead>
+        <tbody>
+        {% for peca in pecas %}
+            <tr>
+                <td>{{ peca.codigo }}</td>
+                <td>{{ peca.nome }}</td>
+                <td>{{ peca.categoria.nome }}</td>
+                <td style="color: var(--red); font-weight: 600;">{{ peca.quantidade_estoque }}</td>
+                <td>{{ peca.quantidade_minima }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" style="color: var(--text-dim);">Nenhuma peça em falta. 🎉</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

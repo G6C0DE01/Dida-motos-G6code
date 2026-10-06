@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Peças{% endblock %}
+{% block nav_pecas %}active{% endblock %}
+{% block page_title %}Peças{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <form class="filter-bar" method="get">
+        <div>
+            <label>Buscar</label>
+            <input type="text" name="busca" value="{{ busca }}" placeholder="Código ou nome...">
+        </div>
+        <div>
+            <label>Categoria</label>
+            <select name="categoria">
+                <option value="">Todas</option>
+                {% for cat in categorias %}
+                    <option value="{{ cat.id }}" {% if categoria_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="checkbox-row" style="padding-bottom: 9px;">
+            <input type="checkbox" id="abaixo_minimo" name="abaixo_minimo" value="1" {% if apenas_abaixo_minimo %}checked{% endif %}>
+            <label for="abaixo_minimo" style="margin: 0;">Só abaixo do mínimo</label>
+        </div>
+        <button type="submit" class="btn">Filtrar</button>
+    </form>
+    <div style="display:flex; gap:10px;">
+        <a href="{% url 'pecas:categoria_list' %}" class="btn btn-sm">Categorias</a>
+        <a href="{% url 'pecas:fabricante_list' %}" class="btn btn-sm">Fabricantes</a>
+        <a href="{% url 'pecas:modelo_list' %}" class="btn btn-sm">Modelos de moto</a>
+        <a href="{% url 'pecas:localizacao_list' %}" class="btn btn-sm">Localizações</a>
+        <a href="{% url 'pecas:novo' %}" class="btn btn-primary">+ Nova peça</a>
+    </div>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th><th>Nome</th><th>Categoria</th><th>Fabricante</th>
+                <th>Estoque</th><th>Mín.</th><th>Custo</th><th>Venda</th><th>Status</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for peca in pecas %}
+            <tr>
+                <td>{{ peca.codigo }}</td>
+                <td>{{ peca.nome }}</td>
+                <td>{{ peca.categoria.nome }}</td>
+                <td>{{ peca.fabricante.nome|default:"-" }}</td>
+                <td style="{% if peca.abaixo_do_minimo %}color: var(--red); font-weight: 600;{% endif %}">
+                    {{ peca.quantidade_estoque }}
+                </td>
+                <td>{{ peca.quantidade_minima }}</td>
+                <td>R$ {{ peca.preco_custo|floatformat:2 }}</td>
+                <td>R$ {{ peca.preco_venda|floatformat:2 }}</td>
+                <td>
+                    {% if peca.ativo %}<span class="badge badge-em_andamento">Ativa</span>
+                    {% else %}<span class="badge badge-concluida">Inativa</span>{% endif %}
+                </td>
+                <td class="table-actions">
+                    <a href="{% url 'pecas:editar' peca.pk %}" class="btn btn-sm">Editar</a>
+                    <form method="post" action="{% url 'pecas:toggle_ativo' peca.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm">{% if peca.ativo %}Desativar{% else %}Ativar{% endif %}</button>
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="10" class="empty-state">Nenhuma peça encontrada.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "_pagination.html" %}
+{% endblock %}

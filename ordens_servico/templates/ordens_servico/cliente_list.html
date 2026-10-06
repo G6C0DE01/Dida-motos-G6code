@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Clientes{% endblock %}
+{% block nav_os %}active{% endblock %}
+{% block page_title %}Ordens de Serviço · Clientes e Motocicletas{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <a href="{% url 'ordens_servico:list' %}" class="link-muted">&larr; Voltar para Ordens de Serviço</a>
+    <div style="display:flex; gap:10px;">
+        <a href="{% url 'ordens_servico:cliente_novo' %}" class="btn btn-sm">+ Cliente sem veículo</a>
+        <a href="{% url 'ordens_servico:motocicleta_novo' %}" class="btn btn-primary">+ Novo veículo</a>
+    </div>
+</div>
+
+<div class="card">
+    <table>
+        <thead><tr><th>Cliente</th><th>CPF</th><th>Telefone</th><th>E-mail</th><th>Motocicletas</th><th></th></tr></thead>
+        <tbody>
+        {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.nome }}</td>
+                <td>{{ cliente.cpf|default:"-" }}</td>
+                <td>{{ cliente.telefone|default:"-" }}</td>
+                <td>{{ cliente.email|default:"-" }}</td>
+                <td>
+                    {% for moto in cliente.motocicletas.all %}
+                        <a href="{% url 'ordens_servico:motocicleta_editar' moto.pk %}" class="link-muted">{{ moto.marca }} {{ moto.modelo }}{% if not forloop.last %}, {% endif %}</a>
+                    {% empty %}
+                        <span class="link-muted">nenhuma</span>
+                    {% endfor %}
+                </td>
+                <td><a href="{% url 'ordens_servico:cliente_editar' cliente.pk %}" class="btn btn-sm">Editar</a></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="empty-state">Nenhum cliente cadastrado.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "_pagination.html" %}
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Veículo{% endblock %}
+{% block nav_os %}active{% endblock %}
+{% block page_title %}Ordens de Serviço · {% if obj %}Editar Veículo{% else %}Novo Veículo{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    <form method="post" {% if not obj %}class="veiculo-cliente-form" data-buscar-cpf-url="{% url 'ordens_servico:cliente_buscar_cpf' %}"{% endif %}>
+        {% csrf_token %}
+        {% if obj %}
+            {% include "_form_fields.html" %}
+        {% else %}
+            <fieldset class="form-section">
+                <legend>Veículo</legend>
+                <div class="form-row">
+                    <label for="{{ form.placa.id_for_label }}">Placa</label>
+                    {{ form.placa }}
+                    {% if form.placa.errors %}<ul class="errorlist">{% for e in form.placa.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                </div>
+                <div class="form-row">
+                    <label for="{{ form.marca.id_for_label }}">Marca *</label>
+                    {{ form.marca }}
+                    {% if form.marca.errors %}<ul class="errorlist">{% for e in form.marca.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                </div>
+                <div class="form-row">
+                    <label for="{{ form.modelo.id_for_label }}">Modelo *</label>
+                    {{ form.modelo }}
+                    {% if form.modelo.errors %}<ul class="errorlist">{% for e in form.modelo.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                </div>
+                <div class="form-row">
+                    <label for="{{ form.ano.id_for_label }}">Ano</label>
+                    {{ form.ano }}
+                    {% if form.ano.errors %}<ul class="errorlist">{% for e in form.ano.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend>Cliente</legend>
+                {% if form.non_field_errors %}<ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+                <div class="cliente-toggle">
+                    <label class="toggle-option">
+                        <input type="radio" name="cliente_modo" value="existente" checked> Cliente já cadastrado
+                    </label>
+                    <label class="toggle-option">
+                        <input type="radio" name="cliente_modo" value="novo"> Novo cliente
+                    </label>
+                </div>
+
+                <div class="cliente-modo-painel" data-modo="existente">
+                    <div class="form-row">
+                        <label for="{{ form.cliente_existente.id_for_label }}">Cliente</label>
+                        {{ form.cliente_existente }}
+                        {% if form.cliente_existente.errors %}<ul class="errorlist">{% for e in form.cliente_existente.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                </div>
+
+                <div class="cliente-modo-painel" data-modo="novo" hidden>
+                    <div class="form-row">
+                        <label for="{{ form.cliente_cpf.id_for_label }}">CPF</label>
+                        {{ form.cliente_cpf }}
+                        <div class="helptext cpf-feedback"></div>
+                        {% if form.cliente_cpf.errors %}<ul class="errorlist">{% for e in form.cliente_cpf.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                    <div class="form-row">
+                        <label for="{{ form.cliente_nome.id_for_label }}">Nome *</label>
+                        {{ form.cliente_nome }}
+                        {% if form.cliente_nome.errors %}<ul class="errorlist">{% for e in form.cliente_nome.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                    </div>
+                    <div class="form-row">
+                        <label for="{{ form.cliente_telefone.id_for_label }}">Telefone</label>
+                        {{ form.cliente_telefone }}
+                    </div>
+                </div>
+            </fieldset>
+        {% endif %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a href="{% url 'ordens_servico:cliente_list' %}" class="btn">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

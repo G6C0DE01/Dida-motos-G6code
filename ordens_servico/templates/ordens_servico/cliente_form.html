@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Cliente{% endblock %}
+{% block nav_os %}active{% endblock %}
+{% block page_title %}Ordens de Serviço · Cliente{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    <form method="post">
+        {% csrf_token %}
+        {% include "_form_fields.html" %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a href="{% url 'ordens_servico:cliente_list' %}" class="btn">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

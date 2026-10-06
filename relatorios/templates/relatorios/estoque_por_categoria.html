@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Estoque por Categoria{% endblock %}
+{% block nav_rel %}active{% endblock %}
+{% block page_title %}Relatórios · Estoque por Categoria{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <div></div>
+    <a href="?export=csv" class="btn btn-sm">Exportar CSV</a>
+</div>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Categoria</th><th>Peças cadastradas</th><th>Itens em estoque</th><th>Valor de custo</th></tr>
+        </thead>
+        <tbody>
+        {% for linha in dados %}
+            <tr>
+                <td>{{ linha.categoria.nome }}</td>
+                <td>{{ linha.total_pecas_cadastradas }}</td>
+                <td>{{ linha.total_itens }}</td>
+                <td>R$ {{ linha.valor_custo|floatformat:2 }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" style="color: var(--text-dim);">Nenhuma categoria cadastrada.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Movimentações{% endblock %}
+{% block nav_mov %}active{% endblock %}
+{% block page_title %}Movimentações{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <form class="filter-bar" method="get">
+        <div>
+            <label>Peça</label>
+            <input type="text" name="busca" value="{{ busca }}" placeholder="Nome da peça...">
+        </div>
+        <div>
+            <label>Tipo</label>
+            <select name="tipo">
+                <option value="">Todos</option>
+                {% for valor, label in tipos %}
+                    <option value="{{ valor }}" {% if tipo == valor %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn">Filtrar</button>
+    </form>
+    <a href="{% url 'movimentacoes:nova' %}" class="btn btn-primary">+ Nova movimentação</a>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Data</th><th>Tipo</th><th>Motivo</th><th>Peça</th><th>Qtd.</th><th>Usuário</th><th>OS</th><th>Obs.</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for mov in movimentacoes %}
+            <tr>
+                <td>{{ mov.data|date:"d/m/Y H:i" }}</td>
+                <td><span class="badge badge-{{ mov.tipo }}">{{ mov.get_tipo_display }}</span></td>
+                <td>{{ mov.get_motivo_display }}</td>
+                <td>{{ mov.peca.nome }}</td>
+                <td>{{ mov.quantidade }}</td>
+                <td>{{ mov.usuario.username }}</td>
+                <td>{{ mov.ordem_servico.numero|default:"-" }}</td>
+                <td>{{ mov.observacao|default:"-" }}</td>
+                <td class="table-actions">
+                    <a href="{% url 'movimentacoes:editar' mov.pk %}" class="btn btn-sm">Editar</a>
+                    {% if is_gerente %}
+                    <form method="post" action="{% url 'movimentacoes:excluir' mov.pk %}" onsubmit="return confirm('Excluir esta movimentação? O estoque da peça será ajustado de volta.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="9" class="empty-state">Nenhuma movimentação registrada.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "_pagination.html" %}
+{% endblock %}

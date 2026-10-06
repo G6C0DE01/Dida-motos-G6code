@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Ordens de Serviço{% endblock %}
+{% block nav_os %}active{% endblock %}
+{% block page_title %}Ordens de Serviço{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <form class="filter-bar" method="get">
+        <div>
+            <label>Status</label>
+            <select name="status">
+                <option value="">Todos</option>
+                {% for valor, label in status_choices %}
+                    <option value="{{ valor }}" {% if status == valor %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn">Filtrar</button>
+    </form>
+    <div style="display:flex; gap:10px;">
+        <a href="{% url 'ordens_servico:cliente_list' %}" class="btn btn-sm">Clientes / Motocicletas</a>
+        <a href="{% url 'ordens_servico:nova' %}" class="btn btn-primary">+ Nova OS</a>
+    </div>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>OS</th><th>Cliente</th><th>Motocicleta</th><th>Status</th><th>Mecânico</th><th>Abertura</th><th>Peça em falta</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for os in ordens %}
+            <tr>
+                <td>{{ os.numero }}</td>
+                <td>{{ os.cliente.nome }}</td>
+                <td>{{ os.motocicleta }}</td>
+                <td><span class="badge badge-{{ os.status }}">{{ os.get_status_display }}</span></td>
+                <td>{{ os.mecanico.username|default:"-" }}</td>
+                <td>{{ os.data_abertura|date:"d/m/Y H:i" }}</td>
+                <td>{% if os.peca_em_falta %}<span style="color: var(--red);">Sim</span>{% else %}Não{% endif %}</td>
+                <td><a href="{% url 'ordens_servico:editar' os.pk %}" class="btn btn-sm">Editar</a></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="8" class="empty-state">Nenhuma ordem de serviço cadastrada.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "_pagination.html" %}
+{% endblock %}

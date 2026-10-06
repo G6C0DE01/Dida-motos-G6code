@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{% if movimentacao %}Editar Movimentação{% else %}Nova Movimentação{% endif %}{% endblock %}
+{% block nav_mov %}active{% endblock %}
+{% block page_title %}{% if movimentacao %}Editar Movimentação{% else %}Nova Movimentação{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    {% if form.non_field_errors %}
+        <ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+    <form method="post" id="mov-form">
+        {% csrf_token %}
+        {% include "_form_fields.html" %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if movimentacao %}Salvar alterações{% else %}Registrar{% endif %}</button>
+            <a href="{% url 'movimentacoes:list' %}" class="btn">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Mostra o campo "direção do ajuste" só quando tipo = Ajuste.
+    (function () {
+        var tipoField = document.getElementById("id_tipo");
+        var direcaoRow = document.getElementById("id_direcao_ajuste").closest(".form-row");
+
+        function atualizar() {
+            direcaoRow.style.display = (tipoField.value === "ajuste") ? "" : "none";
+        }
+        tipoField.addEventListener("change", atualizar);
+        atualizar();
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Funcionários{% endblock %}
+{% block nav_funcionarios %}active{% endblock %}
+{% block page_title %}Funcionários{% endblock %}
+
+{% block content %}
+<div class="actions-bar">
+    <a href="{% url 'core:dashboard' %}" class="link-muted">&larr; Voltar para o Dashboard</a>
+    <a href="{% url 'core:funcionario_novo' %}" class="btn btn-primary">+ Novo funcionário</a>
+</div>
+
+<div class="card">
+    <table>
+        <thead><tr><th>Nome</th><th>Usuário</th><th>Função</th><th>Situação</th><th></th></tr></thead>
+        <tbody>
+        {% for funcionario in funcionarios %}
+            <tr>
+                <td>{{ funcionario.first_name|default:funcionario.username }}</td>
+                <td>{{ funcionario.username }}</td>
+                <td>
+                    {% for grupo in funcionario.groups.all %}{{ grupo.name }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="link-muted">-</span>{% endfor %}
+                </td>
+                <td>
+                    {% if funcionario.is_active %}
+                        <span class="badge badge-entrada">Ativo</span>
+                    {% else %}
+                        <span class="badge badge-saida">Inativo</span>
+                    {% endif %}
+                </td>
+                <td class="table-actions">
+                    {% if funcionario != request.user %}
+                    <form method="post" action="{% url 'core:funcionario_alternar_acesso' funcionario.pk %}">
+                        {% csrf_token %}
+                        {% if funcionario.is_active %}
+                            <button type="submit" class="btn btn-sm">Revogar acesso</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-sm">Reativar acesso</button>
+                        {% endif %}
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" class="empty-state">Nenhum funcionário cadastrado.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

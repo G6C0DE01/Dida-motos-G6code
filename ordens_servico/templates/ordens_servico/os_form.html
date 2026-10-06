@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{% if os_obj %}Editar OS{% else %}Nova OS{% endif %}{% endblock %}
+{% block nav_os %}active{% endblock %}
+{% block page_title %}{% if os_obj %}Editar {{ os_obj.numero }}{% else %}Nova Ordem de Serviço{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card form-card" style="margin-bottom: 16px;">
+    {% if form.non_field_errors %}
+        <ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+    <p class="link-muted" style="margin-top:0;">
+        Cliente ou motocicleta não cadastrado?
+        <a href="{% url 'ordens_servico:cliente_novo' %}">Novo cliente</a> ·
+        <a href="{% url 'ordens_servico:motocicleta_novo' %}">Nova motocicleta</a>
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        {% include "_form_fields.html" %}
+
+        <div class="section-title" style="margin-top: 24px;">Peças utilizadas</div>
+        <p class="helptext" style="margin-top: -8px; margin-bottom: 12px;">
+            Ao salvar, o estoque de cada peça listada abaixo é descontado automaticamente
+            (fica registrado em Movimentações como "Saída · Uso em reparo").
+        </p>
+        {{ formset.management_form }}
+        {% if formset.non_form_errors %}
+            <ul class="errorlist">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        <table style="margin-bottom: 16px;">
+            <thead><tr><th>Peça</th><th>Quantidade</th><th>Preço unit.</th><th>Remover</th></tr></thead>
+            <tbody>
+            {% for item_form in formset %}
+                <tr>
+                    <td>
+                        {{ item_form.id }}
+                        {{ item_form.peca }}
+                        {% if item_form.peca.errors %}<div class="errorlist">{{ item_form.peca.errors }}</div>{% endif %}
+                    </td>
+                    <td>{{ item_form.quantidade }}</td>
+                    <td>{{ item_form.preco_unitario }}</td>
+                    <td>{% if item_form.instance.pk %}{{ item_form.DELETE }}{% endif %}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a href="{% url 'ordens_servico:list' %}" class="btn">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

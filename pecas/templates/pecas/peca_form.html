@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{% if peca %}Editar Peça{% else %}Nova Peça{% endif %}{% endblock %}
+{% block nav_pecas %}active{% endblock %}
+{% block page_title %}{% if peca %}Editar Peça{% else %}Nova Peça{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    {% if form.non_field_errors %}
+        <ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        {% include "_form_fields.html" with show_popup_adds=True %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a href="{% url 'pecas:list' %}" class="btn">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Botões "+" ao lado de Fabricante / Localização / Modelos compatíveis:
+    // abrem o cadastro correspondente numa janela popup, sem sair desta
+    // tela. Ao salvar, o popup se fecha sozinho e avisa esta página (via
+    // postMessage) para adicionar a nova opção no <select> certo.
+    (function () {
+        document.querySelectorAll(".popup-add").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                window.open(btn.dataset.popupUrl, "dida_popup_add", "width=480,height=560,scrollbars=yes");
+            });
+        });
+
+        window.addEventListener("message", function (event) {
+            if (event.origin !== window.location.origin) return;
+            if (!event.data || event.data.source !== "dida-motos-popup") return;
+
+            var select = document.getElementById("id_" + event.data.field);
+            if (!select) return;
+
+            var option = document.createElement("option");
+            option.value = event.data.id;
+            option.textContent = event.data.label;
+            option.selected = true;
+            select.appendChild(option);
+
+            if (event.data.field !== "modelos_compativeis") {
+                select.value = String(event.data.id);
+            }
+        });
+    })();
+</script>
+{% endblock %}

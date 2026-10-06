@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Fornecedor{% endblock %}
+{% block nav_forn %}active{% endblock %}
+{% block page_title %}Fornecedores · {% if fornecedor %}Editar{% else %}Novo{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card form-card" style="margin-bottom: 16px;">
+    <form method="post">
+        {% csrf_token %}
+        {% include "_form_fields.html" %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a href="{% url 'fornecedores:list' %}" class="btn">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% if fornecedor %}
+<div class="card">
+    <div class="actions-bar">
+        <div class="section-title" style="margin: 0;">Histórico de compras e cotações</div>
+        <a href="{% url 'fornecedores:historico_novo' fornecedor.pk %}" class="btn btn-sm">+ Adicionar</a>
+    </div>
+    <table>
+        <thead><tr><th>Data</th><th>Tipo</th><th>Peça</th><th>Qtd.</th><th>Preço unit.</th></tr></thead>
+        <tbody>
+        {% for h in historico %}
+            <tr>
+                <td>{{ h.data|date:"d/m/Y" }}</td>
+                <td>{{ h.get_tipo_display }}</td>
+                <td>{{ h.peca.nome }}</td>
+                <td>{{ h.quantidade }}</td>
+                <td>R$ {{ h.preco_unitario|floatformat:2 }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" class="empty-state">Nenhum registro ainda.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
